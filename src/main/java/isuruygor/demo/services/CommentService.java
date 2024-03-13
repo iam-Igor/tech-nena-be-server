@@ -10,9 +10,11 @@ import isuruygor.demo.payloads.CommentPayloadDTO;
 import isuruygor.demo.repositories.CommentRepo;
 import isuruygor.demo.repositories.PostRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
+@Service
 public class CommentService {
 
     @Autowired
@@ -23,12 +25,6 @@ public class CommentService {
 
     @Autowired
     private CommentRepo commentRepo;
-
-    @Autowired
-    private CommentService commentService;
-
-    @Autowired
-    private PostRepo postRepo;
 
     public Comment findById(long id) { return commentRepo.findById(id).orElseThrow(() -> new NotFoundException(id));}
 
@@ -50,6 +46,7 @@ public class CommentService {
         User loggedUser = userService.findById(currentUser.getId());
         Comment comment = this.findById(commentId);
 
+        // only the user has commented or the post author has permissions to delete a comment
         if(loggedUser.getRole() != Role.ADMIN && !comment.getUser().equals(loggedUser))
             throw new UnauthorizedException("User have no permission to delete the comment!");
 
@@ -62,6 +59,7 @@ public class CommentService {
         User user = userService.findById(currentUser.getId());
         Comment comment = this.findById(commentId);
 
+        // checks if the user who tries to edit is the one who really commented
         if(!comment.getUser().equals(user))
             throw new UnauthorizedException("User have no permission to modify the comment");
 
