@@ -40,7 +40,7 @@ public class Post {
 
     private boolean approved;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private User user;
 
