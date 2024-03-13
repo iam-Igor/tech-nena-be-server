@@ -1,6 +1,7 @@
 package isuruygor.demo.services;
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import isuruygor.demo.entities.Post;
 import isuruygor.demo.entities.PostCategory;
 import isuruygor.demo.entities.User;
@@ -15,7 +16,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -45,6 +48,21 @@ public class PostService {
 
     public Post findByid(long id) {
         return postRepo.findById(id).orElseThrow(() -> new NotFoundException(id));
+    }
+
+
+    // metoto per eliminare un post, prima si fa controllo se il post è presente nella lista dei post
+    //dell'utente
+    public void findByIdAndDelete(User user, long id) {
+
+        User found = userService.findById(user.getId());
+        Post foundPost = this.findByid(id);
+
+        if (found.getPostList().contains(foundPost)) {
+            postRepo.delete(foundPost);
+        } else {
+            throw new UnauthorizedException("Il post da eliminare non corrisponde all'utente corrente.");
+        }
     }
 
 
@@ -137,6 +155,23 @@ public class PostService {
             throw new UnauthorizedException("Il post da modificare non corrisponde all'utente corrente.");
         }
 
+    }
+
+
+    // patch per upload immagine post
+    public String uploadPostImage(MultipartFile file, long postId, User user) throws IOException {
+
+        String url = (String) cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap()).get("url");
+
+        User Found = userService.findById(user.getId());
+        Post foundPost = this.findByid(postId);
+
+        if (foundPost.getUser().getId() == Found.getId()) {
+            foundPost.setPostImage(url);
+            return url;
+        } else {
+            throw new UnauthorizedException("Il post da modificare non corrisponde all'utente corrente.");
+        }
 
     }
 
