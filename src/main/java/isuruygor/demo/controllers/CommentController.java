@@ -8,6 +8,7 @@ import isuruygor.demo.services.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,7 +27,7 @@ public class CommentController {
 
     @PostMapping("/new/{id}")
     @ResponseStatus(HttpStatus.CREATED)
-    public Comment saveNewComment(@AuthenticationPrincipal User user, @PathVariable long id, @RequestBody CommentPayloadDTO body) {
+    public Comment saveNewComment(@AuthenticationPrincipal User user, @PathVariable long id, @RequestBody @Validated CommentPayloadDTO body) {
         return commentService.saveNewComment(user, id, body);
     }
 
@@ -37,7 +38,7 @@ public class CommentController {
     }
 
     @PutMapping("/update/{id}")
-    public Comment updateComment(@AuthenticationPrincipal User user, @PathVariable long id, @RequestBody CommentPayloadDTO body) {
+    public Comment updateComment(@AuthenticationPrincipal User user, @PathVariable long id, @RequestBody @Validated CommentPayloadDTO body) {
         return commentService.updateComment(user, id, body);
     }
 
