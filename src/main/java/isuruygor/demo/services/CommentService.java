@@ -8,7 +8,6 @@ import isuruygor.demo.exceptions.NotFoundException;
 import isuruygor.demo.exceptions.UnauthorizedException;
 import isuruygor.demo.payloads.CommentPayloadDTO;
 import isuruygor.demo.repositories.CommentRepo;
-import isuruygor.demo.repositories.PostRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,10 +25,12 @@ public class CommentService {
     @Autowired
     private CommentRepo commentRepo;
 
-    public Comment findById(long id) { return commentRepo.findById(id).orElseThrow(() -> new NotFoundException(id));}
+    public Comment findById(long id) {
+        return commentRepo.findById(id).orElseThrow(() -> new NotFoundException(id));
+    }
 
     // create new comment
-    public Comment saveNewComment(User user, Long postId, CommentPayloadDTO payload) {
+    public Comment saveNewComment(User user, long postId, CommentPayloadDTO payload) {
         User found = userService.findById(user.getId());
         Post post = postService.findByid(postId);
         Comment comment = new Comment();
@@ -41,13 +42,14 @@ public class CommentService {
         return commentRepo.save(comment);
     }
 
+
     // delete comment
-    public void deleteComment(User currentUser, Long commentId) {
+    public void deleteComment(User currentUser, long commentId) {
         User loggedUser = userService.findById(currentUser.getId());
         Comment comment = this.findById(commentId);
 
         // only the user has commented or the post author has permissions to delete a comment
-        if(loggedUser.getRole() != Role.ADMIN && !comment.getUser().equals(loggedUser))
+        if (loggedUser.getRole() != Role.ADMIN && !comment.getUser().equals(loggedUser))
             throw new UnauthorizedException("User have no permission to delete the comment!");
 
         commentRepo.delete(comment);
@@ -60,7 +62,7 @@ public class CommentService {
         Comment comment = this.findById(commentId);
 
         // checks if the user who tries to edit is the one who really commented
-        if(!comment.getUser().equals(user))
+        if (!comment.getUser().equals(user))
             throw new UnauthorizedException("User have no permission to modify the comment");
 
         comment.setComment(payload.comment());

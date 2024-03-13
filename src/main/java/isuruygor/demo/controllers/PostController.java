@@ -1,6 +1,7 @@
 package isuruygor.demo.controllers;
 
 
+import isuruygor.demo.entities.Comment;
 import isuruygor.demo.entities.Post;
 import isuruygor.demo.entities.User;
 import isuruygor.demo.payloads.PostPayloadDTO;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/posts")
@@ -35,6 +37,11 @@ public class PostController {
         return postService.getPost(page, size, order);
     }
 
+
+    @GetMapping("/comments/{id}")
+    public List<Comment> getCommentsListForPost(@PathVariable long id) {
+        return postService.getCommentsListForPost(id);
+    }
 
     @DeleteMapping("/{id}")
     public void deletePost(@PathVariable long id, @AuthenticationPrincipal User user) {

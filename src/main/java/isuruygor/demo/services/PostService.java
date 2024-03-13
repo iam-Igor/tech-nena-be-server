@@ -2,6 +2,7 @@ package isuruygor.demo.services;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import isuruygor.demo.entities.Comment;
 import isuruygor.demo.entities.Post;
 import isuruygor.demo.entities.PostCategory;
 import isuruygor.demo.entities.User;
@@ -113,6 +114,16 @@ public class PostService {
         Post found = this.findByid(id);
         found.setApproved(true);
         return postRepo.save(found);
+    }
+
+
+    //ottieni lista commenti per un post
+
+    public List<Comment> getCommentsListForPost(long postId) {
+
+        Post found = this.findByid(postId);
+
+        return found.getComments();
     }
 
 
