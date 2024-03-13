@@ -6,6 +6,7 @@ import isuruygor.demo.entities.PostCategory;
 import isuruygor.demo.entities.User;
 import isuruygor.demo.exceptions.BadRequestException;
 import isuruygor.demo.exceptions.NotFoundException;
+import isuruygor.demo.exceptions.UnauthorizedException;
 import isuruygor.demo.payloads.PostPayloadDTO;
 import isuruygor.demo.repositories.PostRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,10 +89,56 @@ public class PostService {
     }
 
 
+    // solo per admin metodo patch che approva il post
+
     public Post approvePost(long id) {
         Post found = this.findByid(id);
         found.setApproved(true);
         return postRepo.save(found);
     }
+
+
+    public Post findByIdAndUpdatePost(User user, long postId, PostPayloadDTO body) {
+
+        User Found = userService.findById(user.getId());
+        Post foundPost = this.findByid(postId);
+
+        if (foundPost.getUser().getId() == Found.getId()) {
+            foundPost.setPostTags(body.tags());
+            foundPost.setPostDate(LocalDateTime.now());
+            foundPost.setContent(body.content());
+            foundPost.setTitle(body.title());
+            String category = body.category().toUpperCase();
+            switch (category) {
+                case "TECH":
+                    foundPost.setCategory(PostCategory.TECH);
+                    break;
+
+                case "TUTORIAL":
+                    foundPost.setCategory(PostCategory.TUTORIAL);
+                    break;
+                case "SCIENCE":
+                    foundPost.setCategory(PostCategory.SCIENCE);
+                    break;
+                case "PROGRAMMING":
+                    foundPost.setCategory(PostCategory.PROGRAMMING);
+                    break;
+                case "WEB":
+                    foundPost.setCategory(PostCategory.WEB);
+                    break;
+
+                default:
+                    throw new BadRequestException("Errore nella sintassi della categoria");
+            }
+
+            return postRepo.save(foundPost);
+
+        } else {
+            throw new UnauthorizedException("Il post da modificare non corrisponde all'utente corrente.");
+        }
+
+
+    }
+
 
 }
