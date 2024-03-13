@@ -29,7 +29,7 @@ public class PostController {
     }
 
     @GetMapping("/all")
-    public Page<Post> getAllApprobedPosts(@RequestParam(defaultValue = "0") int page,
+    public Page<Post> getAllApprovedPosts(@RequestParam(defaultValue = "0") int page,
                                           @RequestParam(defaultValue = "10") int size,
                                           @RequestParam(defaultValue = "id") String order) {
         return postService.getPost(page, size, order);
