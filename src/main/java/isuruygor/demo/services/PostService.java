@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -37,6 +38,16 @@ public class PostService {
     @Autowired
     private Cloudinary cloudinary;
 
+    public static List<String> getAllCategories() {
+        List<String> newList = new ArrayList<>();
+
+        for (PostCategory p : PostCategory.values()) {
+            String formattedCategory = p.toString().substring(0, 1).toUpperCase() + p.toString().substring(1).toLowerCase();
+            newList.add(formattedCategory);
+        }
+
+        return newList;
+    }
 
     // metodo usato in home per caricare tutti i post PUBBLICO
     public Page<Post> getPost(int page, int size, String orderBy) {
@@ -46,11 +57,9 @@ public class PostService {
         return postRepo.findAll((Pageable) postlist);
     }
 
-
     public Post findByid(long id) {
         return postRepo.findById(id).orElseThrow(() -> new NotFoundException(id));
     }
-
 
     // metoto per eliminare un post, prima si fa controllo se il post è presente nella lista dei post
     //dell'utente
@@ -66,6 +75,8 @@ public class PostService {
         }
     }
 
+
+    // solo per admin metodo patch che approva il post
 
     // creazione nuovo post, default data a now e approved a false
     public Post saveNewPost(User user, PostPayloadDTO body) {
@@ -108,7 +119,7 @@ public class PostService {
     }
 
 
-    // solo per admin metodo patch che approva il post
+    //ottieni lista commenti per un post
 
     public Post approvePost(long id) {
         Post found = this.findByid(id);
@@ -117,7 +128,11 @@ public class PostService {
     }
 
 
-    //ottieni lista commenti per un post
+    //ottieni lista di post by categpry
+
+    public List<Post> findByCategory(String category) {
+        return postRepo.getPostsByCategory(category.toUpperCase());
+    }
 
     public List<Comment> getCommentsListForPost(long postId) {
 
@@ -125,7 +140,6 @@ public class PostService {
 
         return found.getComments();
     }
-
 
     public Post findByIdAndUpdatePost(User user, long postId, PostPayloadDTO body) {
 

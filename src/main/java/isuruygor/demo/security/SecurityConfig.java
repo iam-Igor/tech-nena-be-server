@@ -54,7 +54,9 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:5173", "https://food2youu-ph275jx5e-iam-igors-projects.vercel.app", "https://food2youu.vercel.app", "https://food2youu.vercel.app/*", "http://192.168.1.117:3000/", "http://192.168.1.117:3000")); // cambiare porta in base a quella del live server
+
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173")); // cambiare porta in base a quella del live server
+
         configuration.setAllowedMethods(Arrays.asList("*"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
