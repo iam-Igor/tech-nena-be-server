@@ -25,7 +25,6 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
-
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.CREATED)
     public TokenResponse login(@RequestBody @Validated LoginDTO payload) {
