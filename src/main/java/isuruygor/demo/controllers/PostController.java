@@ -43,6 +43,12 @@ public class PostController {
         return postService.getCommentsListForPost(id);
     }
 
+
+    @GetMapping("/categories")
+    public List<String> getAllCategories() {
+        return postService.getAllCategories();
+    }
+
     @DeleteMapping("/{id}")
     public void deletePost(@PathVariable long id, @AuthenticationPrincipal User user) {
         postService.findByIdAndDelete(user, id);

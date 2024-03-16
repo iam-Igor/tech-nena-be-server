@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -124,6 +125,20 @@ public class PostService {
         Post found = this.findByid(postId);
 
         return found.getComments();
+    }
+
+
+    public List<String> getAllCategories() {
+
+        List<String> newList = new ArrayList<>();
+
+        for (PostCategory p : PostCategory.values()) {
+
+            newList.add(p.toString());
+        }
+
+        return newList;
+
     }
 
 
