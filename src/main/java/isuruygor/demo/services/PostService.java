@@ -12,10 +12,7 @@ import isuruygor.demo.exceptions.UnauthorizedException;
 import isuruygor.demo.payloads.PostPayloadDTO;
 import isuruygor.demo.repositories.PostRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,6 +20,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -53,8 +51,13 @@ public class PostService {
     public Page<Post> getPost(int page, int size, String orderBy) {
         if (size >= 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy));
-        List<Post> postlist = postRepo.findAll(pageable).stream().filter(post -> post.isApproved()).toList();
-        return postRepo.findAll((Pageable) postlist);
+        Page<Post> postPage = postRepo.findAll(pageable);
+        // Filtriamo i post approvati dalla pagina ottenuta dalla repository
+        List<Post> approvedPosts = postPage.getContent().stream()
+                .filter(Post::isApproved)
+                .collect(Collectors.toList());
+        // Creiamo una nuova pagina basata sui post approvati
+        return new PageImpl<>(approvedPosts, pageable, postPage.getTotalElements());
     }
 
     public Post findByid(long id) {

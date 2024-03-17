@@ -49,6 +49,13 @@ public class PostController {
         return postService.getAllCategories();
     }
 
+
+    //find list of posts based on category Automatically converted in uppercase into service method
+    @GetMapping("/{category}")
+    public List<Post> findByCategory(@PathVariable String category) {
+        return postService.findByCategory(category);
+    }
+
     @DeleteMapping("/{id}")
     public void deletePost(@PathVariable long id, @AuthenticationPrincipal User user) {
         postService.findByIdAndDelete(user, id);
