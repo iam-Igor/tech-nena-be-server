@@ -7,7 +7,9 @@ import isuruygor.demo.entities.Post;
 import isuruygor.demo.entities.User;
 import isuruygor.demo.exceptions.NotFoundException;
 import isuruygor.demo.payloads.UserPayloadDTO;
+import isuruygor.demo.payloads.UserUpdateDTO;
 import isuruygor.demo.repositories.UserRepo;
+import isuruygor.demo.responses.UserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -42,7 +44,7 @@ public class UserService {
 
 
     public User findById(long id) {
-        return userRepo.findById(id).orElseThrow(() -> new NotFoundException(id));
+        return userRepo.findById(id).orElseThrow(() -> new NotFoundException("utente not trovato: " + id));
     }
 
 
@@ -70,20 +72,37 @@ public class UserService {
     }
 
 
-    // post per modificare i dati di un utente che arriva tramite auth principal
+    // patch per modificare i dati di un utente che arriva tramite auth principal
+    public UserResponse updateUser(User currentUser, UserUpdateDTO payload) {
+        User user = this.findById(currentUser.getId());
 
-    public User updateUser(User user, UserPayloadDTO payload) {
-        if (user != null) {
-
-            user.setName(payload.name());
-            user.setLastname(payload.lastname());
+        if(payload.password() != null && !payload.password().isEmpty())
             user.setPassword(bcrypt.encode(payload.password()));
+
+        if(payload.name() != null && !payload.name().isEmpty())
+            user.setName(payload.name());
+
+        if(payload.lastname() != null && !payload.lastname().isEmpty())
+            user.setLastname(payload.lastname());
+
+        if(payload.email() != null && !payload.email().isEmpty())
             user.setEmail(payload.email());
+
+        if(payload.username() != null && !payload.username().isEmpty())
             user.setUsername(payload.username());
-            return userRepo.save(user);
-        } else {
-            return user;
-        }
+
+        System.out.println("receive body : " + payload);
+        System.out.println("update user " + user);
+
+        userRepo.save(user);
+        return new UserResponse(
+                user.getAvatarUrl(),
+                user.getEmail(),
+                user.getId(),
+                user.getLastname(),
+                user.getName(),
+                user.getRole(),
+                user.getUsername());
     }
 
 
