@@ -12,10 +12,7 @@ import isuruygor.demo.exceptions.UnauthorizedException;
 import isuruygor.demo.payloads.PostPayloadDTO;
 import isuruygor.demo.repositories.PostRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -54,8 +51,9 @@ public class PostService {
         if (size >= 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy));
         List<Post> postlist = postRepo.findAll(pageable).stream().filter(post -> post.isApproved()).toList();
-        return postRepo.findAll((Pageable) postlist);
+        return new PageImpl<Post>(postlist, pageable, postlist.size());
     }
+
 
     public Post findByid(long id) {
         return postRepo.findById(id).orElseThrow(() -> new NotFoundException(id));

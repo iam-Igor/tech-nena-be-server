@@ -42,11 +42,9 @@ public class UserService {
         return userRepo.findAll(pageable);
     }
 
-
     public User findById(long id) {
         return userRepo.findById(id).orElseThrow(() -> new NotFoundException("utente not trovato: " + id));
     }
-
 
     public void findByIdAndDelete(long id) {
         User found = this.findById(id);
