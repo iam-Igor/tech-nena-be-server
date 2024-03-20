@@ -5,6 +5,7 @@ import isuruygor.demo.entities.Comment;
 import isuruygor.demo.entities.Post;
 import isuruygor.demo.entities.User;
 import isuruygor.demo.payloads.PostPayloadDTO;
+import isuruygor.demo.responses.PostResponse;
 import isuruygor.demo.services.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -31,9 +32,9 @@ public class PostController {
     }
 
     @GetMapping("/all")
-    public Page<Post> getAllApprovedPosts(@RequestParam(defaultValue = "0") int page,
-                                          @RequestParam(defaultValue = "10") int size,
-                                          @RequestParam(defaultValue = "id") String order) {
+    public Page<PostResponse> getAllApprovedPosts(@RequestParam(defaultValue = "0") int page,
+                                                  @RequestParam(defaultValue = "10") int size,
+                                                  @RequestParam(defaultValue = "id") String order) {
         return postService.getPost(page, size, order);
     }
 

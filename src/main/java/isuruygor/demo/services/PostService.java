@@ -11,6 +11,7 @@ import isuruygor.demo.exceptions.NotFoundException;
 import isuruygor.demo.exceptions.UnauthorizedException;
 import isuruygor.demo.payloads.PostPayloadDTO;
 import isuruygor.demo.repositories.PostRepo;
+import isuruygor.demo.responses.PostResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -47,11 +48,28 @@ public class PostService {
     }
 
     // metodo usato in home per caricare tutti i post PUBBLICO
-    public Page<Post> getPost(int page, int size, String orderBy) {
+    public Page<PostResponse> getPost(int page, int size, String orderBy) {
         if (size >= 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy));
-        List<Post> postlist = postRepo.findAll(pageable).stream().filter(post -> post.isApproved()).toList();
-        return new PageImpl<Post>(postlist, pageable, postlist.size());
+        // TODO: send only the approved ones
+        // List<Post> postlist = postRepo.findAll(pageable).stream().filter(post -> post.isApproved()).toList();
+        List<PostResponse> postlist = postRepo.findAll().stream().map(post -> new PostResponse(
+                post.getId(),
+                post.getTitle(),
+                post.getContent(),
+                post.getPostDate(),
+                post.getCategory(),
+                post.getPostTags(),
+                post.getPostImage(),
+                post.getApproved(),
+                post.getUser().getUsername(),
+                post.getUser().getName(),
+                post.getUser().getLastname(),
+                post.getUser().getAvatarUrl(),
+                post.getUser().getId()
+        )).toList();
+
+        return new PageImpl<PostResponse>(postlist, pageable, postlist.size());
     }
 
 
