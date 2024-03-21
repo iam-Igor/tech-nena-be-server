@@ -31,11 +31,20 @@ public class PostController {
         return postService.findByid(id);
     }
 
-    @GetMapping("/all")
+    @GetMapping("/approved")
     public Page<PostResponse> getAllApprovedPosts(@RequestParam(defaultValue = "0") int page,
                                                   @RequestParam(defaultValue = "10") int size,
                                                   @RequestParam(defaultValue = "id") String order) {
         return postService.getPost(page, size, order);
+    }
+
+    @GetMapping("/all")
+    public Page<PostResponse> getAllPosts(@RequestParam(defaultValue = "0") int page,
+                                          @RequestParam(defaultValue = "10") int size,
+                                          @RequestParam(defaultValue = "id") String order,
+                                          @AuthenticationPrincipal User currentUser) {
+        return postService.getAllPosts(page, size, order, currentUser);
+
     }
 
 

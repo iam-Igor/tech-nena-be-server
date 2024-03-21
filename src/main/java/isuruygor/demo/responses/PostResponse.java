@@ -1,6 +1,7 @@
 package isuruygor.demo.responses;
 
 import isuruygor.demo.entities.PostCategory;
+import isuruygor.demo.entities.PostType;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,6 +16,7 @@ public record PostResponse(
         Set<String> postTags,
         String postImage,
         Boolean approved,
+        PostType state,
         String username,
         String name,
         String lastname,

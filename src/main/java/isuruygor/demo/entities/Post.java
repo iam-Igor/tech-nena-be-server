@@ -41,6 +41,9 @@ public class Post {
 
     private Boolean approved;
 
+    @Enumerated(EnumType.STRING)
+    private PostType state = PostType.PENDING;
+
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private User user;

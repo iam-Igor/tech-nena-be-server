@@ -2,10 +2,7 @@ package isuruygor.demo.services;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import isuruygor.demo.entities.Comment;
-import isuruygor.demo.entities.Post;
-import isuruygor.demo.entities.PostCategory;
-import isuruygor.demo.entities.User;
+import isuruygor.demo.entities.*;
 import isuruygor.demo.exceptions.BadRequestException;
 import isuruygor.demo.exceptions.NotFoundException;
 import isuruygor.demo.exceptions.UnauthorizedException;
@@ -47,13 +44,8 @@ public class PostService {
         return newList;
     }
 
-    // metodo usato in home per caricare tutti i post PUBBLICO
-    public Page<PostResponse> getPost(int page, int size, String orderBy) {
-        if (size >= 100) size = 100;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy));
-        // TODO: send only the approved ones
-        // List<Post> postlist = postRepo.findAll(pageable).stream().filter(post -> post.isApproved()).toList();
-        List<PostResponse> postlist = postRepo.findAll().stream().map(post -> new PostResponse(
+    private PostResponse sendPostResponse(Post post) {
+        return new PostResponse(
                 post.getId(),
                 post.getTitle(),
                 post.getContent(),
@@ -62,13 +54,36 @@ public class PostService {
                 post.getPostTags(),
                 post.getPostImage(),
                 post.getApproved(),
+                post.getState(),
                 post.getUser().getUsername(),
                 post.getUser().getName(),
                 post.getUser().getLastname(),
                 post.getUser().getAvatarUrl(),
                 post.getUser().getId()
-        )).toList();
+        );
+    }
 
+    // metodo usato in home per caricare tutti i post PUBBLICO
+    public Page<PostResponse> getPost(int page, int size, String orderBy) {
+        if (size >= 100) size = 100;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy));
+        // TODO: send only the approved ones
+        // List<Post> postlist = postRepo.findAll(pageable).stream().filter(post -> post.isApproved()).toList();
+        List<PostResponse> postlist = postRepo.findAll().stream().filter(post -> post.getState() == PostType.APPROVED).map(this::sendPostResponse
+        ).toList();
+
+        return new PageImpl<PostResponse>(postlist, pageable, postlist.size());
+    }
+
+    public Page<PostResponse> getAllPosts(int page, int size, String orderBy, User currentUser) {
+        // validates user authorities
+        User user = userService.findById(currentUser.getId());
+        if(user.getRole() != Role.ADMIN) throw new UnauthorizedException("Only Admins have access!");
+
+        // sends all the posts
+        if(size >= 100) size = 100;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy));
+        List<PostResponse> postlist = postRepo.findAll().stream().map(this::sendPostResponse).toList();
         return new PageImpl<PostResponse>(postlist, pageable, postlist.size());
     }
 
