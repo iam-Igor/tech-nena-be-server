@@ -38,6 +38,15 @@ public class PostController {
         return postService.getPost(page, size, order);
     }
 
+    @GetMapping("/pending")
+    public Page<PostResponse> getPendingPosts(@RequestParam(defaultValue = "0") int page,
+                                          @RequestParam(defaultValue = "10") int size,
+                                          @RequestParam(defaultValue = "id") String order,
+                                          @AuthenticationPrincipal User currentUser) {
+        return postService.getPendingPosts(page, size, order, currentUser);
+
+    }
+
     @GetMapping("/all")
     public Page<PostResponse> getAllPosts(@RequestParam(defaultValue = "0") int page,
                                           @RequestParam(defaultValue = "10") int size,

@@ -75,6 +75,19 @@ public class PostService {
         return new PageImpl<PostResponse>(postlist, pageable, postlist.size());
     }
 
+    public Page<PostResponse> getPendingPosts(int page, int size, String orderBy, User currentUser) {
+        // validates user authorities
+        User user = userService.findById(currentUser.getId());
+        if(user.getRole() != Role.ADMIN) throw new UnauthorizedException("Only Admins have access!");
+
+        if (size >= 100) size = 100;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy));
+        List<PostResponse> postlist = postRepo.findAll().stream().filter(post -> post.getState() == PostType.PENDING).map(this::sendPostResponse
+        ).toList();
+
+        return new PageImpl<PostResponse>(postlist, pageable, postlist.size());
+    }
+
     public Page<PostResponse> getAllPosts(int page, int size, String orderBy, User currentUser) {
         // validates user authorities
         User user = userService.findById(currentUser.getId());
