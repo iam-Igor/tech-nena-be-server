@@ -8,6 +8,7 @@ import isuruygor.demo.exceptions.NotFoundException;
 import isuruygor.demo.exceptions.UnauthorizedException;
 import isuruygor.demo.payloads.PostPayloadDTO;
 import isuruygor.demo.repositories.PostRepo;
+import isuruygor.demo.responses.NewPostCreatedResponse;
 import isuruygor.demo.responses.PostResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -27,7 +28,6 @@ public class PostService {
     @Autowired
     PostRepo postRepo;
 
-
     @Autowired
     UserService userService;
 
@@ -45,6 +45,7 @@ public class PostService {
         return newList;
     }
 
+    // method that converts post list response
     private PostResponse sendPostResponse(Post post) {
         return new PostResponse(
                 post.getId(),
@@ -68,22 +69,9 @@ public class PostService {
     public Page<PostResponse> getPost(int page, int size, String orderBy) {
         if (size >= 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy));
-        // TODO: send only the approved ones
+        // TODO: modify entity(boolean approved?)
         // List<Post> postlist = postRepo.findAll(pageable).stream().filter(post -> post.isApproved()).toList();
         List<PostResponse> postlist = postRepo.findAll().stream().filter(post -> post.getState() == PostType.APPROVED).map(this::sendPostResponse
-        ).toList();
-
-        return new PageImpl<PostResponse>(postlist, pageable, postlist.size());
-    }
-
-    public Page<PostResponse> getPendingPosts(int page, int size, String orderBy, User currentUser) {
-        // validates user authorities
-        User user = userService.findById(currentUser.getId());
-        if(user.getRole() != Role.ADMIN) throw new UnauthorizedException("Only Admins have access!");
-
-        if (size >= 100) size = 100;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy));
-        List<PostResponse> postlist = postRepo.findAll().stream().filter(post -> post.getState() == PostType.PENDING).map(this::sendPostResponse
         ).toList();
 
         return new PageImpl<PostResponse>(postlist, pageable, postlist.size());
@@ -151,7 +139,7 @@ public class PostService {
     // solo per admin metodo patch che approva il post
 
     // creazione nuovo post, default data a now e approved a false
-    public Post saveNewPost(User user, PostPayloadDTO body) {
+    public NewPostCreatedResponse saveNewPost(User user, PostPayloadDTO body) {
 
         User found = userService.findById(user.getId());
 
@@ -186,8 +174,8 @@ public class PostService {
                 throw new BadRequestException("Errore nella sintassi della categoria");
         }
 
-        return postRepo.save(newPost);
-
+        postRepo.save(newPost);
+        return new NewPostCreatedResponse(newPost.getId());
     }
 
 
@@ -265,6 +253,7 @@ public class PostService {
 
         if (foundPost.getUser().getId() == Found.getId()) {
             foundPost.setPostImage(url);
+            postRepo.save(foundPost);
             return url;
         } else {
             throw new UnauthorizedException("Il post da modificare non corrisponde all'utente corrente.");

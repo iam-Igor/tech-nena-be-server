@@ -5,6 +5,7 @@ import isuruygor.demo.entities.Comment;
 import isuruygor.demo.entities.Post;
 import isuruygor.demo.entities.User;
 import isuruygor.demo.payloads.PostPayloadDTO;
+import isuruygor.demo.responses.NewPostCreatedResponse;
 import isuruygor.demo.responses.PostResponse;
 import isuruygor.demo.services.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,14 +39,8 @@ public class PostController {
         return postService.getPost(page, size, order);
     }
 
-//    @GetMapping("/pending")
-//    public Page<PostResponse> getPendingPosts(@RequestParam(defaultValue = "0") int page,
-//                                          @RequestParam(defaultValue = "10") int size,
-//                                          @RequestParam(defaultValue = "id") String order,
-//                                          @AuthenticationPrincipal User currentUser) {
-//        return postService.getPendingPosts(page, size, order, currentUser);
-//    }
-
+    // get all post based on parameters,
+    // Only for ADMIN
     @GetMapping("/all")
     public Page<PostResponse> getAllPosts(@RequestParam(defaultValue = "0") int page,
                                           @RequestParam(defaultValue = "10") int size,
@@ -75,7 +70,7 @@ public class PostController {
 
     @PostMapping("/new")
     @ResponseStatus(HttpStatus.CREATED)
-    public Post saveNewPost(@AuthenticationPrincipal User user, @RequestBody @Validated PostPayloadDTO body) {
+    public NewPostCreatedResponse saveNewPost(@AuthenticationPrincipal User user, @RequestBody @Validated PostPayloadDTO body) {
         return postService.saveNewPost(user, body);
     }
 
