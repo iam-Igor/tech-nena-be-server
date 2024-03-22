@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class PostService {
@@ -88,15 +89,42 @@ public class PostService {
         return new PageImpl<PostResponse>(postlist, pageable, postlist.size());
     }
 
-    public Page<PostResponse> getAllPosts(int page, int size, String orderBy, User currentUser) {
+    // gets post list based on parameters
+    // ADMIN endpoint
+    public Page<PostResponse> getAllPosts(int page, int size, String orderBy, User currentUser, String state) {
         // validates user authorities
         User user = userService.findById(currentUser.getId());
         if(user.getRole() != Role.ADMIN) throw new UnauthorizedException("Only Admins have access!");
 
         // sends all the posts
         if(size >= 100) size = 100;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy));
-        List<PostResponse> postlist = postRepo.findAll().stream().map(this::sendPostResponse).toList();
+        Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy).descending());
+        List<PostResponse> postlist = new ArrayList<>();
+
+        // gets all the posts
+        if(Objects.equals(state, "all"))
+            postlist = postRepo.findAll(pageable).stream()
+                    .map(this::sendPostResponse).toList();
+
+        // gets all the approved posts
+        if(Objects.equals(state, "approved"))
+            postlist = postRepo.findAll(pageable).stream()
+                    .filter(post -> post.getState() == PostType.APPROVED)
+                    .map(this::sendPostResponse).toList();
+
+        // gets all the pending posts
+        if(Objects.equals(state, "pending"))
+            postlist = postRepo.findAll(pageable).stream()
+                    .filter(post -> post.getState() == PostType.PENDING)
+                    .map(this::sendPostResponse).toList();
+
+        // gets all the hide posts
+        // ? there might be no use case
+        if(Objects.equals(state, "hide"))
+            postlist = postRepo.findAll(pageable).stream()
+                    .filter(post -> post.getState() == PostType.HIDE)
+                    .map(this::sendPostResponse).toList();
+
         return new PageImpl<PostResponse>(postlist, pageable, postlist.size());
     }
 
