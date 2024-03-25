@@ -27,6 +27,7 @@ public class Post {
 
     private String title;
 
+    @Column(length = 1500)
     private String content;
 
     private LocalDateTime postDate;
@@ -38,7 +39,10 @@ public class Post {
 
     private String postImage;
 
-    private boolean approved;
+    private Boolean approved;
+
+    @Enumerated(EnumType.STRING)
+    private PostType state = PostType.PENDING;
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")

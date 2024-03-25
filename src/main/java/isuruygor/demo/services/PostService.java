@@ -2,20 +2,16 @@ package isuruygor.demo.services;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import isuruygor.demo.entities.Comment;
-import isuruygor.demo.entities.Post;
-import isuruygor.demo.entities.PostCategory;
-import isuruygor.demo.entities.User;
+import isuruygor.demo.entities.*;
 import isuruygor.demo.exceptions.BadRequestException;
 import isuruygor.demo.exceptions.NotFoundException;
 import isuruygor.demo.exceptions.UnauthorizedException;
 import isuruygor.demo.payloads.PostPayloadDTO;
 import isuruygor.demo.repositories.PostRepo;
+import isuruygor.demo.responses.NewPostCreatedResponse;
+import isuruygor.demo.responses.PostResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,6 +19,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class PostService {
@@ -30,7 +27,6 @@ public class PostService {
 
     @Autowired
     PostRepo postRepo;
-
 
     @Autowired
     UserService userService;
@@ -49,13 +45,77 @@ public class PostService {
         return newList;
     }
 
+    // method that converts post list response
+    private PostResponse sendPostResponse(Post post) {
+        return new PostResponse(
+                post.getId(),
+                post.getTitle(),
+                post.getContent(),
+                post.getPostDate(),
+                post.getCategory(),
+                post.getPostTags(),
+                post.getPostImage(),
+                post.getApproved(),
+                post.getState(),
+                post.getUser().getUsername(),
+                post.getUser().getName(),
+                post.getUser().getLastname(),
+                post.getUser().getAvatarUrl(),
+                post.getUser().getId()
+        );
+    }
+
     // metodo usato in home per caricare tutti i post PUBBLICO
-    public Page<Post> getPost(int page, int size, String orderBy) {
+    public Page<PostResponse> getPost(int page, int size, String orderBy) {
         if (size >= 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy));
-        List<Post> postlist = postRepo.findAll(pageable).stream().filter(post -> post.isApproved()).toList();
-        return postRepo.findAll((Pageable) postlist);
+        // TODO: modify entity(boolean approved?)
+        // List<Post> postlist = postRepo.findAll(pageable).stream().filter(post -> post.isApproved()).toList();
+        List<PostResponse> postlist = postRepo.findAll().stream().filter(post -> post.getState() == PostType.APPROVED).map(this::sendPostResponse
+        ).toList();
+
+        return new PageImpl<PostResponse>(postlist, pageable, postlist.size());
     }
+
+    // gets post list based on parameters
+    // ADMIN endpoint
+    public Page<PostResponse> getAllPosts(int page, int size, String orderBy, User currentUser, String state) {
+        // validates user authorities
+        User user = userService.findById(currentUser.getId());
+        if(user.getRole() != Role.ADMIN) throw new UnauthorizedException("Only Admins have access!");
+
+        // sends all the posts
+        if(size >= 100) size = 100;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy).descending());
+        List<PostResponse> postlist = new ArrayList<>();
+
+        // gets all the posts
+        if(Objects.equals(state, "all"))
+            postlist = postRepo.findAll(pageable).stream()
+                    .map(this::sendPostResponse).toList();
+
+        // gets all the approved posts
+        if(Objects.equals(state, "approved"))
+            postlist = postRepo.findAll(pageable).stream()
+                    .filter(post -> post.getState() == PostType.APPROVED)
+                    .map(this::sendPostResponse).toList();
+
+        // gets all the pending posts
+        if(Objects.equals(state, "pending"))
+            postlist = postRepo.findAll(pageable).stream()
+                    .filter(post -> post.getState() == PostType.PENDING)
+                    .map(this::sendPostResponse).toList();
+
+        // gets all the hide posts
+        // ? there might be no use case
+        if(Objects.equals(state, "hide"))
+            postlist = postRepo.findAll(pageable).stream()
+                    .filter(post -> post.getState() == PostType.HIDE)
+                    .map(this::sendPostResponse).toList();
+
+        return new PageImpl<PostResponse>(postlist, pageable, postlist.size());
+    }
+
 
     public Post findByid(long id) {
         return postRepo.findById(id).orElseThrow(() -> new NotFoundException(id));
@@ -79,7 +139,7 @@ public class PostService {
     // solo per admin metodo patch che approva il post
 
     // creazione nuovo post, default data a now e approved a false
-    public Post saveNewPost(User user, PostPayloadDTO body) {
+    public NewPostCreatedResponse saveNewPost(User user, PostPayloadDTO body) {
 
         User found = userService.findById(user.getId());
 
@@ -114,8 +174,8 @@ public class PostService {
                 throw new BadRequestException("Errore nella sintassi della categoria");
         }
 
-        return postRepo.save(newPost);
-
+        postRepo.save(newPost);
+        return new NewPostCreatedResponse(newPost.getId());
     }
 
 
@@ -193,6 +253,7 @@ public class PostService {
 
         if (foundPost.getUser().getId() == Found.getId()) {
             foundPost.setPostImage(url);
+            postRepo.save(foundPost);
             return url;
         } else {
             throw new UnauthorizedException("Il post da modificare non corrisponde all'utente corrente.");

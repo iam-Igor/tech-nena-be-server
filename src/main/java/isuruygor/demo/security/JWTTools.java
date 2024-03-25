@@ -28,7 +28,6 @@ public class JWTTools {
 
 
     //verifica token
-
     public void verifyToken(String token) {
         try {
             Jwts.parser().verifyWith(Keys.hmacShaKeyFor(secret.getBytes())).build().parse(token);

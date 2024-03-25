@@ -5,6 +5,8 @@ import isuruygor.demo.entities.Comment;
 import isuruygor.demo.entities.Post;
 import isuruygor.demo.entities.User;
 import isuruygor.demo.payloads.PostPayloadDTO;
+import isuruygor.demo.responses.NewPostCreatedResponse;
+import isuruygor.demo.responses.PostResponse;
 import isuruygor.demo.services.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -30,11 +32,22 @@ public class PostController {
         return postService.findByid(id);
     }
 
-    @GetMapping("/all")
-    public Page<Post> getAllApprovedPosts(@RequestParam(defaultValue = "0") int page,
-                                          @RequestParam(defaultValue = "10") int size,
-                                          @RequestParam(defaultValue = "id") String order) {
+    @GetMapping("/approved")
+    public Page<PostResponse> getAllApprovedPosts(@RequestParam(defaultValue = "0") int page,
+                                                  @RequestParam(defaultValue = "10") int size,
+                                                  @RequestParam(defaultValue = "id") String order) {
         return postService.getPost(page, size, order);
+    }
+
+    // get all post based on parameters,
+    // Only for ADMIN
+    @GetMapping("/all")
+    public Page<PostResponse> getAllPosts(@RequestParam(defaultValue = "0") int page,
+                                          @RequestParam(defaultValue = "10") int size,
+                                          @RequestParam(defaultValue = "postDate") String order,
+                                          @RequestParam(defaultValue = "all") String state,
+                                          @AuthenticationPrincipal User currentUser) {
+        return postService.getAllPosts(page, size, order, currentUser, state);
     }
 
 
@@ -57,7 +70,7 @@ public class PostController {
 
     @PostMapping("/new")
     @ResponseStatus(HttpStatus.CREATED)
-    public Post saveNewPost(@AuthenticationPrincipal User user, @RequestBody @Validated PostPayloadDTO body) {
+    public NewPostCreatedResponse saveNewPost(@AuthenticationPrincipal User user, @RequestBody @Validated PostPayloadDTO body) {
         return postService.saveNewPost(user, body);
     }
 
