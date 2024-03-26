@@ -11,7 +11,7 @@ public record PostResponse(
         Long id,
         String title,
         String content,
-        LocalDateTime postData,
+        LocalDateTime postDate,
         PostCategory category,
         Set<String> postTags,
         String postImage,

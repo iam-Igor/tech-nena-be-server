@@ -100,6 +100,12 @@ public class PostService {
                     .filter(post -> post.getState() == PostType.APPROVED)
                     .map(this::sendPostResponse).toList();
 
+        // gets all the not approved posts
+        if(Objects.equals(state, "notApproved"))
+            postlist = postRepo.findAll(pageable).stream()
+                    .filter(post -> post.getState() == PostType.NOT_APPROVED)
+                    .map(this::sendPostResponse).toList();
+
         // gets all the pending posts
         if(Objects.equals(state, "pending"))
             postlist = postRepo.findAll(pageable).stream()
