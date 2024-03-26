@@ -119,7 +119,7 @@ public class PostService {
                     .filter(post -> post.getState() == PostType.HIDE)
                     .map(this::sendPostResponse).toList();
 
-        return new PageImpl<PostResponse>(postlist, pageable, postlist.size());
+        return new PageImpl<PostResponse>(postlist, pageable, postRepo.count());
     }
 
 
